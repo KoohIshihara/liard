@@ -1,0 +1,297 @@
+module-editor
+  div.wrap-module
+    div.wrap-title
+      input(onkeyup='{titleKeyup}' placeholder='Write the title of your fake here...' value='{titleValue}')#titleInput
+    div(onchange='{updateContent}').editable.pl2
+
+  style(scoped, type='less').
+    :scope {
+      display: block;
+      width: 90%;
+      max-width: 840px;
+      margin: 0 auto;
+      .wrap-module {
+        position: relative;
+        .wrap-title {
+          input {
+            width: 100%;
+            font-size: 28px;
+            outline: none;
+          }
+          input::placeholder {
+            font-style: italic;
+            color: #222;
+          }
+        }
+        
+        .medium-insert-buttons {
+          .medium-insert-buttons-show {
+            position: relative;
+            top: -4px;
+            left: -40px;
+            color: #2a2a2a;
+            border: 0.4px solid #2a2a2a;
+          }
+          .medium-insert-buttons-addons {
+            position: relative;
+            top: -35px;
+            left: 3px;
+            li {
+              button {
+                color: #2a2a2a;
+                border: 0.4px solid #2a2a2a;
+                span:before {
+                  color: #2a2a2a;
+                }
+              }
+            }
+          }
+          @media only screen and (max-width : 600px) {
+            .medium-insert-buttons-show {
+              left: 0px;
+            }
+            .medium-insert-buttons-addons {
+              left: 42px;
+            }
+          }
+        }
+
+        .medium-editor-element {
+          p {
+            font-weight: lighter;
+            font-size: 20px;
+          }
+          b {
+            font-weight: bold;
+            font-size: 20px;
+          }
+          a {
+            color: #999;
+            font-size: 20px;
+            border-bottom: solid 0.8px;
+          }
+          blockquote {
+            font-style: italic;
+            border-left: solid #2a2a2a;
+            padding-left: 12px;
+            position: relative;
+            left: -16px;
+            font-size: 20px;
+          }
+        }
+
+        .medium-insert-images {
+          .medium-insert-images-progress {
+            background: rgba(255, 255, 255, 0.0) !important;
+          }
+        }
+        
+        
+      }
+    }
+
+  script.
+
+    var self = this;
+    this.id = opts.id;
+
+    this.titleValue;
+    this.content;
+
+    this.on('mount', function(){
+
+      
+      self.editor = new MediumEditor('.editable', {
+        toolbar: {
+          buttons: ['bold', 'italic', 'h2', 'anchor', 'quote'],
+        },
+        anchor: {
+            customClassOption: null,
+            customClassOptionText: 'Button',
+            linkValidation: false,
+            placeholderText: 'Paste or type a link',
+            targetCheckbox: false,
+            targetCheckboxText: 'Open in new window'
+        },
+        anchorPreview: {
+            hideDelay: 500,
+            previewValueSelector: 'a'
+        },
+        placeholder: {
+            text: 'Tell your fake story here...',
+            hideOnClick: true
+        },
+        keyboardCommands: {
+          commands: [
+            {
+              command: 'bold',
+              key: 'B',
+              meta: true,
+              shift: false,
+              alt: false
+            },
+            {
+              command: 'italic',
+              key: 'I',
+              meta: true,
+              shift: false,
+              alt: false
+            },
+            {
+              command: 'underline',
+              key: 'U',
+              meta: true,
+              shift: false,
+              alt: false
+            }
+          ],
+        },
+        imageDragging: false,
+      });
+
+      //editor.getContent(); // get html
+
+      $('.editable').mediumInsert({
+          editor: self.editor
+      });
+      
+
+      /*
+      self.editor = new MediumEditor('.editable');
+  
+      $('.editable').mediumInsert({
+        editor: self.editor
+      });
+      */
+
+      /*
+      var editor = new MediumEditor('.editable');
+        
+      $('.editable').mediumInsert({
+        editor: editor
+      });
+      */
+
+      self.updateContentTimer = setTimeout(function(){}, 0);
+      self.editor.subscribe('editableInput', function (event, editorElement) {
+        clearTimeout(self.updateContentTimer); 
+        var content = self.editor.getContent();
+        self.updateContentTimer = setTimeout(self.updateContent, 2000, content);
+      });
+
+      self.loadArticle();
+      
+      var titleInput = document.getElementById('titleInput');
+      titleInput.focus();
+
+    });
+
+    // 日本語か判定する関数
+    this.isJP = function(str){
+      return ( str.match(/^[\u30a0-\u30ff\u3040-\u309f\u3005-\u3006\u30e0-\u9fcf]+$/) )? true : false;
+    }
+
+    this.preComposing = false;
+    this.updateTitleTimer = setTimeout(function(){}, 0);
+    this.titleKeyup = function(e){
+      
+      clearTimeout(self.updateTitleTimer); 
+      self.updateTitleTimer = setTimeout(self.updateTitle, 5000, e.target.value);
+
+
+      if(e.isComposing){
+        self.preComposing = true;
+        return;
+      }
+
+      if(e.key === 'Enter'){
+
+        // 直前が変換中だった場合
+        if(self.preComposing){
+          self.preComposing = false;
+          return;
+        }
+        
+        var element = document.querySelector('.editable');
+        self.editor.selectElement(element);
+        
+      }
+    }
+
+    this.getValueOfEditor = function(){
+      var serial = self.editor.serialize();
+      var value = serial['element-0'].value;
+      value = value.replace(/<("[^"]*"|'[^']*'|[^'">])*>/g,'');
+
+      return value;
+    }
+
+    this.updateTitle = async function(title){
+      if(title=='') return;
+
+      $('#labelSaving').show();
+      $('#labelSaved').hide();
+
+      self.titleValue = title;
+      await service.db.collection('articles').doc(self.id).update({
+        title: title,
+      });
+
+      $('#labelSaving').hide();
+      $('#labelSaved').show();
+
+      console.log('update content');
+    }
+
+    this.updateContent = async function(content){
+      if(self.getValueOfEditor(content)=='') return;
+
+      $('#labelSaving').show();
+      $('#labelSaved').hide();
+
+      self.content = content;
+      /*await service.db.collection('articles').doc(self.id).update({
+        content: content,
+      });*/
+
+      await service.db.collection('articles').doc(self.id)
+        .collection('content')
+        .doc('content')
+        .set({
+          'html': content,
+          'author': session.user.uid
+          });
+
+      $('#labelSaving').hide();
+      $('#labelSaved').show();
+
+      console.log('update content');
+    }
+
+    this.loadArticle = async function(){
+      $('#loading').fadeIn(400);
+
+      var articleDoc = await service.db.collection('articles').doc(self.id).get();
+      var article = articleDoc.data();
+
+      self.titleValue = article.title;
+      //self.content = article.content;
+
+      var articleContentDoc = await service.db.collection('articles').doc(self.id)
+        .collection('content')
+        .doc('content')
+        .get();
+      self.content = articleContentDoc.data().html;
+
+      self.editor.setContent(self.content, 0);
+
+      $('.editable').html(self.content);
+
+      self.update();
+
+      $('#loading').fadeOut(400);
+    }
+
+
+
+

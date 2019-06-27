@@ -1,0 +1,71 @@
+item-tags-setting(data-tags='{tags}')
+  div.wrap-item.f.flex-wrap
+    atom-tag-for-setting(each='{item in tags}' label='{item}' func='{deleteTag}')
+    div.wrap-input-tag.mb12.f.fm
+      input(onkeyup='{up}' placeholder='Your Tag Name')#tagInput.mr4
+      img(onclick='{addTag}' src='./img/icon/add.svg')
+    
+  style(scoped, type='less').
+    :scope {
+      .wrap-input-tag {
+        input {
+          width: 122px;
+          font-size: 16px;
+          font-weight: lighter;
+          letter-spacing: 0.6px;
+          border-bottom: solid 1px rgba(0,0,0,0.2);
+          outline: none;
+        }
+        input::placeholder {
+          font-style: italic;
+          color: #999;
+          letter-spacing: 0.6px;
+        }
+      }
+    }
+
+  script.
+
+    var self = this;
+    this.tags = opts.tags;
+    riot.addedTags = this.tags;
+
+    this.on('mount', function(){
+
+      
+    });
+
+    this.addTag = function(){
+      var tagInput = document.getElementById('tagInput');
+      if(tagInput.value=='') return;
+
+      self.tags.push(tagInput.value);
+      self.update();
+
+      tagInput.value='';
+      tagInput.focus();
+    }
+
+    riot.deleteTag = function(tagName, event){
+      
+      /*
+      self.tags = self.tags.filter(function(value, index){
+        if(value != tagName) return value;
+      }, tagName);
+      */
+
+      var newTags = [];
+      for(var i=0; i<self.tags.length; i++){
+        if(self.tags[i] != tagName) newTags.push(self.tags[i]);
+      }
+      self.tags = newTags;
+      riot.addedTags = self.tags;
+      self.update();
+
+    }
+
+    this.up = function(event){
+      if(event.keyCode === 13) self.addTag();
+    }
+
+

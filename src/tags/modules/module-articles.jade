@@ -1,0 +1,73 @@
+module-articles
+  div.wrap-module.py30
+    div.wrap-curated.mb24
+      h2.mb12 Curated
+      div.f.flex-wrap.flex-between
+        item-card-article(each='{item in curatedArticles}' content='{item}')
+    div.wrap-normal
+      h2.mb12 New
+      div.f.flex-wrap.flex-between
+        item-card-article(each='{item in articles}' content='{item}')
+
+
+  style(scoped, type='less').
+    :scope {
+      
+    }
+
+  script.
+
+    var self = this;
+
+    self.normalArticleNum = opts.normalarticlenum;
+    self.curatedArticleNum = opts.curatedarticlenum;
+
+    this.on('mount', function(){
+
+      
+    });
+
+
+    $('#loading').fadeIn(400);
+
+    this.loadNormalArticles = async function(){
+      self.articles = await service.db.collection('articles')
+        .where('publish', '==', true)
+        .where('curated', '==', false)
+        .orderBy('createdAt', 'desc')
+        //.limit(self.normalArticleNum)
+        .get()
+        .then(function(e){
+          return e.docs.map(function(doc){
+            var data = doc.data();
+            data.id = doc.id;
+            return data;
+          });
+        })
+      self.update();
+
+      $('#loading').fadeOut(400);
+    }
+    this.loadNormalArticles();
+
+
+    this.loadCuratedArticles = async function(){
+
+      self.curatedArticles = await service.db.collection('articles')
+        .where('publish', '==', true)
+        .where('curated', '==', true)
+        .orderBy('createdAt', 'desc')
+        //.limit(self.curatedArticleNum)
+        .get()
+        .then(function(e){
+          return e.docs.map(function(doc){
+            var data = doc.data();
+            data.id = doc.id;
+            return data;
+          });
+        })
+      self.update();
+
+      $('#loading').fadeOut(400);
+    }
+    this.loadCuratedArticles();

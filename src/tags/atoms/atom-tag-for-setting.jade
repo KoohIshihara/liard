@@ -1,0 +1,34 @@
+atom-tag-for-setting.pl8.pr6.py4.mr12.mb12
+  div.wrap-atom.f.fm
+    span.mr4 {label}
+    img(onclick='{deleteTag.bind(e, label)}' src='./img/icon/close.svg').icon
+    
+    
+  style(scoped, type='less').
+    :scope {
+      border: solid 1px #999;
+      border-radius: 6px;
+      .wrap-atom {
+        span {
+          color: #999;
+          letter-spacing: 0.6px;
+        }
+        .icon {
+          width: 16px;
+          cursor: pointer;
+        }
+      }
+    }
+
+  script.
+
+    var self = this;
+    this.label = opts.label;
+
+    this.on('mount', function(){
+
+      
+    });
+
+    this.deleteTag = riot.deleteTag;
+

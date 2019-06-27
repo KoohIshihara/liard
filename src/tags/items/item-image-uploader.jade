@@ -1,0 +1,92 @@
+item-image-uploader(data='{topImg}')
+  div.wrap-item
+    label(for="file_upload")
+      div(style='{bgStyle}').wrap-upload-box.f.fh
+        //span.message Choose Your File
+        input(type="file" name="fileInput" onchange='{change}' id="file_upload" accept="image/png, image/jpeg")
+      div.overlay-file-upload.f.fh
+        span.message Choose Your File
+
+  style(scoped, type='less').
+    :scope {
+      label {
+        position: relative;
+        display: block;
+        width: 100%;
+        max-width: 420px;
+        height: 260px;
+        background: #F5F5F5;
+        border-radius: 6px;
+        overflow: hidden;
+        cursor: pointer;
+        .wrap-upload-box {
+          position: absolute;
+          display: block;
+          left: 0;
+          top: 0;
+          z-index: 100;
+          background-position: center center;
+          background-size: cover;
+          width: 100%;
+          height: 100%;
+          input {
+            display: none;
+          }
+        }
+        .overlay-file-upload {
+          pointer-events: none;
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          left: 0;
+          top: 0;
+          z-index: 101;
+          background: rgba(0,0,0,0.2);
+          .message {
+            color: #FFF;
+            font-size: 16px;
+            letter-spacing: 0.6px;
+          }
+        }
+      }
+    }
+
+  script.
+
+    var self = this;
+    
+    this.topImg = opts.topImg;
+    this.bgStyle = `background-image: url(${this.topImg})`;
+    riot.uploadedTopImgUrl = this.topImg;
+
+    this.on('mount', function(){
+      
+    });
+
+    this.change = async function(e){
+      
+      var fileInput = document.getElementsByName('fileInput');
+      var files = fileInput[0].files;
+      
+      if (files.length > 0) {
+      // 選択されたファイル情報を取得
+      console.log(files.length);
+      for(var i=0;i<files.length;i++){
+          var file = files[i];
+          var name = location.hash.split('/')[1];
+          var storageRef = firebase.storage().ref(name);
+          var imgUrl = await storageRef.put(file).then(function(snapshot) {
+            return snapshot.downloadURL
+          });
+
+          self.topImg = imgUrl;
+          self.bgStyle = `background-image: url(${self.topImg})`;
+          self.update();
+
+          riot.uploadedTopImgUrl = self.topImg;
+      }}
+
+    }
+
+
+

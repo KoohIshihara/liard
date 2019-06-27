@@ -1,0 +1,216 @@
+module-user-profile
+  div.wrap-module.f.fm.py30
+    div(onclick='{toUserPage}').wrap-img.f.fh
+      img(src='{user.photoUrl}')
+    div.wrap-profile.f.fm.pt12
+      div.profile.profile-edit.ml30
+        div.f.flex-between.mb6
+          input(value='{user.name}' style='{profileNameStyle}' onkeyup='{up}').profile-name.mb6
+          div(if='{session.user.uid == user.uid}').wrap-button-edit
+            span(onclick='{toggleEditable}').edit.px8.py4 Edit
+          div(if='{session.user.uid == user.uid}').wrap-button-save-cancel
+            span(onclick='{saveProfile}').save.px8.py4 Save
+        textarea(style='{profileTextStyle}' onkeyup='{up}').profile-text {user.profile}
+      
+      div.profile.profile-inline.ml30
+        div.f.flex-between.mb6
+          span.profile-name.mb6 {user.name}
+          div.wrap-button
+            div
+        span.profile-text {user.profile}
+
+
+  style(scoped, type='less').
+    :scope {
+      .wrap-module {
+        width: 100%;
+        border-bottom: solid .6px rgba(0,0,0,0.2);
+        .wrap-img {
+          width: 120px;
+          height: 120px;
+          overflow: hidden;
+          border-radius: 50%;
+          img {
+            object-fit: cover;
+          }
+        }
+        .wrap-profile {
+          position: relative;
+          width: calc(~'100% - 120px');
+          .profile {
+            width: calc(~'100% - 30px');
+            .profile-name {
+              display: block;
+              font-size: 22px;
+              letter-spacing: 0.6px;
+              outline: none;
+              resize: none;
+
+              pointer-events: none;
+            }
+            .profile-text {
+              display: inline-block;
+              font-size: 14px;
+              letter-spacing: 0.6px;
+              word-break: break-all;
+              color: #999;
+              outline: none;
+              resize: none;
+              overflow: hidden;
+
+              pointer-events: none;
+            }
+            .wrap-button-edit {
+              .edit {
+                border: solid 0.6px;
+                border-radius: 6px;
+                font-size: 14px;
+                letter-spacing: 0.6px;
+                background: #2a2a2a;
+                color: #FFF;
+                cursor: pointer;
+              }
+            }
+            .wrap-button-save-cancel {
+              display: none;
+              .save {
+                border: solid 0.6px;
+                border-radius: 6px;
+                font-size: 14px;
+                letter-spacing: 0.6px;
+                background: #2a2a2a;
+                color: #FFF;
+                cursor: pointer;
+              }
+            }
+          }
+          .profile-inline {
+            visibility: hidden;
+          }
+          .profile-edit {
+            position: absolute;
+          }
+        }
+
+        .active {
+          
+          .profile-text {
+            pointer-events: all !important;
+            border-bottom: solid #03A9F4 0.5px;
+            color: #03A9F4 !important;
+          }
+          .profile-name {
+            pointer-events: all !important;
+            border-bottom: solid #03A9F4 0.5px;
+            color: #03A9F4 !important;
+          }
+
+          .wrap-button-edit {
+            display: none !important;
+          }
+          .wrap-button-save-cancel {
+            display: block !important;
+          }
+
+        }
+      } /*wrap-module*/
+    }
+
+  script.
+
+    var self = this;
+
+    this.on('mount', function(){
+      
+    });
+
+    this.getUser = async function(uid){
+
+      var userDoc = await service.db.collection('users').doc(uid).get();
+      self.user = userDoc.data();
+      self.user.photoUrl = `${self.user.photoUrl}?width=200&amp;height=200`;
+
+      if(!self.user.profile) self.user.profile = 'No Profile';
+
+      self.update();
+      self.fixTexareaSize();
+
+    };
+
+    if(opts.uid) this.getUser(opts.uid);
+
+    this.toUserPage = function(){
+      window.location.href = `/#user/${opts.uid}`;
+    }
+
+
+    this.fixTexareaSize = function(){
+
+      var baseNameElem = $('.profile-inline').find('.profile-name')[0];
+      var baseProfileTextElem = $('.profile-inline').find('.profile-text')[0];
+
+      var nameWidth = baseNameElem.offsetWidth + 4;
+      var nameHeight = baseNameElem.offsetHeight;
+
+      self.profileNameStyle = `width: ${nameWidth}px; height: ${nameHeight}px`;
+
+      var profileTextWidth = baseProfileTextElem.offsetWidth + 4;
+      var profileTextHeight = baseProfileTextElem.offsetHeight;
+
+      self.profileTextStyle = `width: ${profileTextWidth}px; height: ${profileTextHeight}px`;
+
+      self.update();
+
+    }
+
+    window.onresize = function(){
+      self.fixTexareaSize();
+    }
+
+
+    this.up = function(e){
+      e.preventDefault();
+
+      $('.profile-edit').find('.profile-name')[0].value = $('.profile-edit').find('.profile-name')[0].value.replace(/\r?\n/g, '');
+      $('.profile-edit').find('.profile-text')[0].value = $('.profile-edit').find('.profile-text')[0].value.replace(/\r?\n/g, '');
+
+      self.user.name = $('.profile-edit').find('.profile-name')[0].value;
+      self.user.profile = $('.profile-edit').find('.profile-text')[0].value;
+
+      self.update();
+
+      self.fixTexareaSize();
+    }
+
+    this.toggleEditable = function(){
+      
+      $('.profile-edit').toggleClass('active');
+
+    }
+
+    this.saveProfile = async function(){
+
+      session.user.name = $('.profile-edit').find('.profile-name')[0].value.replace(/\r?\n/g, '');
+      session.user.profile = $('.profile-edit').find('.profile-text')[0].value.replace(/\r?\n/g, '');    
+
+      var doc = await service.db.collection('users').doc(session.user.uid).set(session.user);
+
+      console.log('updateProfile');
+      $('.profile-edit').toggleClass('active');
+
+    }
+
+
+    this.checkAuth = function(){
+
+      if(riot.finishAuthChecked){
+        self.update();      
+        clearInterval(self.timer);
+      }
+
+    }
+
+    this.timer = setInterval(this.checkAuth, 800);
+
+
+

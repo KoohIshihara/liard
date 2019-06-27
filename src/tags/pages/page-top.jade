@@ -1,0 +1,36 @@
+page-top
+  div.wrap-page
+    div.wrap-top-content
+      module-articles(normalArticleNum='{20}' curatedArticleNum='{10}')
+    
+
+  style(scoped, type='less').
+    :scope {
+      .wrap-page {
+        width: 100%;
+        min-height: 100vh;
+        background: #F8F8F8;
+        .wrap-top-content {
+          display: block;
+          width: 100%;
+          width: 90%;
+          max-width: 840px;
+          margin: 0 auto;
+          padding: 48px 0px;
+        }
+      }
+    }
+
+  script.
+
+    var self = this;
+
+    this.on('mount', function(){
+
+      
+    });
+
+
+    
+
+    

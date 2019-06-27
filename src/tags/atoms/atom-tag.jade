@@ -1,0 +1,27 @@
+atom-tag.pl7.pr8.py4.mr12
+  div.wrap-atom.f.fm
+    span {label}    
+    
+  style(scoped, type='less').
+    :scope {
+      border: solid 1px #2a2a2a;
+      border-radius: 6px;
+      display: inline-block;
+      .wrap-atom {
+        span {
+          color: #2a2a2a;
+          letter-spacing: 0.6px;
+          font-size: 12px;
+        }
+      }
+    }
+
+  script.
+
+    var self = this;
+    this.label = opts.label;
+
+    this.on('mount', function(){
+
+      
+    });

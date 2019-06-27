@@ -1,0 +1,45 @@
+page-article-settings
+  div(if='{content}').wrap-page.py40
+    module-article-settings(id='{id}')
+    
+  style(scoped, type='less').
+    :scope {
+      padding-top: 48px;
+      .wrap-page {
+        display: block;
+        background: #FFF;
+        width: 90%;
+        max-width: 420px;
+        margin: 0 auto;
+        max-height: 840px;
+      }
+    }
+
+  script.
+
+    var self = this;
+    this.id = opts.id;
+
+    this.on('mount', function(){
+
+      $('modal-content').addClass('show');
+      $('modal-content').scrollTop(0);
+
+      // 次の画面遷移時にフェードインを防止
+      riot.enableFadeIn = false;
+
+      $(document).on("custom:close", function() {
+        $('modal-content').removeClass('show');
+        self.unmount(true);
+      });
+    });
+
+    this.locadArticle = async function(){
+      
+      var contentDoc = await service.db.collection('articles').doc(self.id).get();
+      self.content = contentDoc.data();
+      self.update();
+
+    }
+
+    this.locadArticle();

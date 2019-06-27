@@ -1,0 +1,251 @@
+util-header
+  div(if="{status == 'normal'}").wrap-util.f.fm.flex-between
+    div.left
+      a(href='/#').logo.f.fm
+        img(src='./img/liard-first-logo.svg')
+    div.right.buttons
+      div(if='{!(authed)}').f.fm
+        a(href='/#sign-in').mr20 Sign In
+        a(href='/#sign-up').header-cta.px10.py8 Get Started
+      div(if='{authed}').f.fm
+        a(onclick='{createNewFake}').header-cta.px10.py8.mr12 Create Fake
+        a(href='{userPageUrl}').wrap-user-icon
+          img(src="{session.user.photoUrl + '?width=120&amp;height=120'}")
+    div.wrap-label.f.fh
+      //p {label}
+      //a(href='./').logo.f.fm
+        img(src='./img/liard-first-logo.svg')
+
+  div(if="{status == 'modal'}").wrap-util.f.fm.flex-between
+    div(onclick='{toBack}').left.f.fh
+      img(src='./img/icon/back.svg').left-icon
+    div.right.buttons
+      //div(if='{!(authed)}').f.fm
+        a(href='./#sign-up') Get Started
+        a(href='./#sign-up').header-cta.px10.py8 Get Started
+    div.wrap-label.f.fh
+      //p {label}
+      a(href='/').logo.f.fm
+        //img(src='./img/liard-first-logo.svg')
+
+  div(if="{status == 'article_modal'}").wrap-util.f.fm.flex-between
+    div(onclick='{toBack}').left
+      a(href='/#').logo.f.fm
+        img(src='./img/liard-first-logo.svg')
+    div.right.buttons
+      div(if='{!(authed)}').f.fm
+        a(href='/#sign-in').mr20 Sign In
+        a(href='/#sign-up').header-cta.px10.py8 Get Started
+      div(if='{authed}').f.fm
+        a(onclick='{createNewFake}').header-cta.px10.py8.mr12 Create Fake
+        a(href='{userPageUrl}').wrap-user-icon
+          img(src="{session.user.photoUrl + '?width=120&amp;height=120'}")
+    div.wrap-label.f.fh
+      //p {label}
+      //a(href='./').logo.f.fm
+        img(src='./img/liard-first-logo.svg')
+
+  div(if="{status == 'edit'}").wrap-util.f.fm.flex-between
+    div.left.f.fm
+      img(onclick='{toBack}' src='/img/icon/back.svg').icon.mr8
+      span#labelSaving.label Saving...
+      span#labelSaved.label Saved
+      //a(href='./').logo.f.fm
+        img(src='./img/liard-first-logo.svg')
+    div.right.buttons
+      div.f.fm
+        a(onclick='{toPreview}').add-border.mr12.px10.py8 Preview
+        a(onclick='{toPublichSettings}').header-cta.px10.py8.mr12 Publish
+        a(href='{userPageUrl}').wrap-user-icon
+          img(src="{session.user.photoUrl + '?width=120&amp;height=120'}")
+    div.wrap-label.f.fh
+      //p {label}
+      //a(href='./').logo.f.fm
+        img(src='./img/liard-first-logo.svg')
+
+  style(scoped, type='less').
+    :scope {
+      position: fixed;
+      z-index: 111;
+      top: 0;
+      left: 0;
+      display: block;
+      width: 100%;
+      height: 48px;
+      /*background: #2196F3;
+      filter: drop-shadow(1px 1px 1px rgba(0,0,0,0.4));*/
+      border-bottom: solid .6px rgba(0,0,0,0.2);
+      background: #F8F8F8;
+      .wrap-util {
+        position: relative;
+        width: 90%;
+        max-width: 840px;
+        height: 100%;
+        margin: 0 auto;
+        .left {
+          .logo {
+            width: 126px;
+          }
+          .icon {
+            width: 22px;
+          }
+          .label {
+            font-size: 14px;
+          }
+
+          #labelSaving {
+            display: none;
+          }
+          #labelSaved {
+            display: block;
+          }
+        }
+
+        .left-icon {
+          width: 22px;
+        }
+
+        .buttons {
+          div {
+            a {
+              font-size: 12px;
+              font-weight: lighter;
+              letter-spacing: 0.4px;
+              display: inline-block;
+              color: #2a2a2a;
+              cursor: pointer;
+            }
+            span {
+              font-size: 12px;
+              font-weight: lighter;
+              letter-spacing: 0.4px;
+              display: inline-block;
+              color: #2a2a2a;
+            }
+            .add-border {
+              border: solid 0.6px;
+              border-radius: 6px;
+              font-weight: 400;
+            }
+            .header-cta {
+              border: solid 0.6px;
+              border-radius: 6px;
+              background: #2a2a2a;
+              color: #FFF;
+              cursor: pointer;
+            }
+            .wrap-user-icon {
+              img {
+                height: 30px;
+                border-radius: 50%;
+              }
+            }
+          }
+        }
+
+        .wrap-label {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          pointer-events: none;
+          .logo {
+            width: 126px;
+            pointer-events: all;
+          }
+        }
+        .header-button {
+          cursor: pointer;
+          font-size: 14px;
+          color: #2196F3;
+        }
+      } /* .wrap-util */
+    }
+
+  script.
+
+    var self = this;
+    //this.routeTo = routeTo
+
+    this.status = opts.__proto__.status;
+    this.label = opts.__proto__.label;
+
+    this.checkAuth = function(){
+      if(session.user==null && riot.finishAuthChecked){
+        self.authed = false;
+        self.update();
+        clearInterval(self.timer);
+      }else if(session.user!=undefined){
+        self.authed = true;
+        self.userPageUrl = `/#user/${session.user.uid}`;
+        self.update();
+        clearInterval(self.timer);
+      }
+    }
+
+
+    this.createNewFake = async function(){
+
+      var articleObj = {
+        author: session.user.uid,
+        createdAt: new Date(),
+        editedAt: new Date(),
+        title: '',
+        subTitle: '',
+        content: '',
+        topImg: 'https://firebasestorage.googleapis.com/v0/b/liard-fike.appspot.com/o/LIARD-logo.png?alt=media&token=333c15e6-0c92-4ba3-91f7-ee5f350d1fb2',
+        publishDate: '2045-04-01',
+        tags: [],
+        published: false
+      };
+
+      if(session.user.curated){
+        articleObj.curated = true;
+      }else{
+        articleObj.curated = false;
+      }
+
+      var articleDoc = await service.db.collection('articles').add(articleObj);
+
+      await service.db.collection('articles').doc(articleDoc.id)
+        .collection('content').doc('content').set({
+          html: '',
+        })
+
+      window.location.href = `/#edit/${articleDoc.id}`;
+
+    }
+
+    // used from edit
+    this.toPreview = function(){
+      var articleId = location.href.split('#')[1].split('/')[1];
+      window.location.href = `/#preview/${articleId}`;
+    }
+
+    this.toPublichSettings = function(){
+      var articleId = location.href.split('#')[1].split('/')[1];
+      window.location.href = `/#article_settings/${articleId}`;
+    }
+
+    // used from modal
+    this.toBack = function(){
+      // 他のページから直接飛んできた場合にバックを押したらトップへ飛ばす
+      if(riot.history.length==1){
+        window.location.href = '/';
+      }else{
+        window.history.back();
+      }
+    }
+
+    this.on('mount', function(){
+
+      if(session.user==undefined){
+        this.timer = setInterval(this.checkAuth, 800);
+      }else{
+        self.authed = true;
+        self.userPageUrl = `/#user/${session.user.uid}`;
+        self.update(); 
+      }
+
+    });
+
+    

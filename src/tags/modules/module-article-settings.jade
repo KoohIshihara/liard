@@ -1,0 +1,136 @@
+module-article-settings
+  div(if='{content}').wrap-module
+    div.wrap-image-uploader.mb30
+      h3.mb12 Main Image:
+      //item-image-uploader(if='{content}' content='{content.topImg}')
+      image-uploader
+    div.wrap-title.mb30
+      h3.mb8 Title:
+      input(placeholder='Title of your Fake' value='{content.title}' name='title')#titleInput.pb2
+    div.wrap-sub-title.mb30
+      h3.mb8 Sub Title:
+      input(placeholder='Sub Title of your Fake' value='{content.subTitle}' name='subTitle').pb2
+    div.wrap-date-setting.mb22
+      h3.mb16 Date Setting:
+      //item-date-setting(date='{content.publishedDate}')
+      date-setting
+    div.wrap-tags.mb32
+      h3.mb12 Tags:
+      //item-tags-setting(tags='{content.tags}')
+      tags-setting
+    div.wrap-publish-button
+      span(onclick='{publish}').publish-button.px10.py10 Publish Now
+    
+  style(scoped, type='less').
+    :scope {
+      padding-top: 48px;
+      .wrap-module {
+        h3 {
+          font-size: 18px;
+          font-weight: 600;
+          letter-spacing: 0.8px;
+        }
+        .wrap-image-uploader {
+
+        }
+        .wrap-title {
+          input {
+            width: 100%;
+            max-width: 420px;
+            border-bottom: solid 1px rgba(0,0,0,0.2);
+            outline: none;
+            font-size: 18px;
+          }
+          input::placeholder {
+            font-style: italic;
+            color: #222;
+          }
+        }
+        .wrap-sub-title {
+          input {
+            width: 100%;
+            max-width: 420px;
+            border-bottom: solid 1px rgba(0,0,0,0.2);
+            outline: none;
+            font-size: 18px;
+          }
+          input::placeholder {
+            font-style: italic;
+            color: #999;
+          }
+        }
+        .wrap-publish-button {
+          .publish-button {
+            cursor: pointer;
+            border-radius: 6px;
+            color: #FFF;
+            letter-spacing: 0.6px;
+            background: #2A2A2A;
+          }
+        }
+      }
+    }
+
+  script.
+
+    var self = this;
+    this.content;
+    this.id = opts.id;
+
+    this.on('mount', function(){
+
+      self.locadArticle();
+
+      // for router
+      $('modal-content').addClass('show');
+      $('modal-content').scrollTop(0);
+
+      // 次の画面遷移時にフェードインを防止
+      riot.enableFadeIn = false;
+
+      $(document).on("custom:close", function() {
+        $('modal-content').removeClass('show');
+        self.unmount(true);
+      });
+    });
+
+    this.locadArticle = async function(){
+      $('#loadingForModal').fadeIn(400);
+
+      var contentDoc = await service.db.collection('articles').doc(self.id).get();
+      self.content = contentDoc.data();
+      
+      setTimeout(function(){
+        riot.mount('image-uploader', 'item-image-uploader', {topImg: self.content.topImg});
+        riot.mount('date-setting', 'item-date-setting', {date: self.content.publishDate});
+        riot.mount('tags-setting', 'item-tags-setting', {tags: self.content.tags});
+      }, 200);
+
+      self.update();
+
+      $('#loadingForModal').fadeOut(400);
+    }
+
+    this.publish = async function(){
+      $('#loadingForModal').fadeIn(400);
+
+      this.content.title = document.getElementsByName('title')[0].value;
+      this.content.subTitle = document.getElementsByName('subTitle')[0].value;
+      this.content.topImg = riot.uploadedTopImgUrl;
+      this.content.tags = riot.addedTags
+      this.content.publishDate = riot.addedDate;
+
+      this.content.publish = true;
+
+      await service.db.collection('articles').doc(this.id).set(this.content);
+
+      alert('Your Fake is published.');
+
+      riot.preventReload = false;
+      window.location.href = `./#user/${session.user.uid}`;
+
+      $('#loadingForModal').fadeOut(400);
+    }
+
+
+

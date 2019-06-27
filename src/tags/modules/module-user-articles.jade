@@ -1,0 +1,137 @@
+module-user-articles
+  div.wrap-module.py30
+    div.head.f.fm.flex-between
+        h2 His / Her Fakes:
+        div(onclick='{createNewFake}' if='{showCreateNewFake}').create-new-fake
+          div.head.f.fm.px10.py6
+            span.pb4.mr4 +
+            span Create New Fake
+    div(if='{!showList}').wrap-cards.f.flex-wrap.flex-between.py30
+      item-card-article(each='{item in articles}' content='{item}')
+    div(if='{showList}').wrap-lists.py10
+      item-list-article(each='{item in articles}' content='{item}')
+
+  style(scoped, type='less').
+    :scope {
+      padding-top: 48px;
+      .wrap-module {
+        .head {
+          h2 {
+            font-size: 16px;
+            color: #2a2a2a;
+            letter-spacing: .4px;
+          }
+          .create-new-fake {
+            div {
+              display: inline-flex;
+              border: solid 0.6px #2a2a2a;
+              border-radius: 6px;
+              cursor: pointer;
+              span {
+                color: #2a2a2a;
+                font-size: 12px;
+                font-weight: normal;
+                letter-spacing: 0.4px;
+              }
+            }
+          }
+        }
+        .wrap-articles {
+          width: 100%;
+        }
+      }
+    }
+
+  script.
+
+    var self = this;
+    this.uid = opts.uid;
+    this.showList = false;
+
+    if(this.uid=='all'){
+
+    }else{
+
+    }
+
+    this.checkAuth = function(){
+
+      if(session.user==null && riot.finishAuthChecked){
+        self.authed = false;
+        self.showList = false;
+        self.update();
+        clearInterval(self.timer);
+      }else if(session.user!=undefined){
+        if(self.uid==session.user.uid){
+          console.log('your page');
+          self.isMyPage = true;
+          self.showList = true;
+          self.showCreateNewFake = true;
+        }
+        self.authed = true;
+        self.update();
+        clearInterval(self.timer);
+      }
+
+    }
+
+    this.timer = setInterval(this.checkAuth, 800);
+
+
+    this.loadArticles = async function(){
+      $('#loading').fadeIn(400);
+
+      self.articles = await service.db.collection('articles')
+        .where('author', '==', self.uid)
+        .where('publish', '==', true)
+        .orderBy('createdAt', 'desc')
+        .get()
+        .then(function(e){
+          return e.docs.map(function(doc){
+            var data = doc.data();
+            data.id = doc.id;
+            return data;
+          });
+        })
+      self.update();
+
+      $('#loading').fadeOut(400);
+    }
+    this.loadArticles();
+
+    this.createNewFake = async function(){
+
+      var articleObj = {
+        author: session.user.uid,
+        createdAt: new Date(),
+        editedAt: new Date(),
+        title: '',
+        subTitle: '',
+        content: '',
+        topImg: 'https://firebasestorage.googleapis.com/v0/b/liard-fike.appspot.com/o/LIARD-logo.png?alt=media&token=333c15e6-0c92-4ba3-91f7-ee5f350d1fb2',
+        publishDate: '2045-04-01',
+        tags: [],
+        published: false
+      };
+
+      if(session.user.curated){
+        articleObj.curated = true;
+      }else{
+        articleObj.curated = false;
+      }
+      
+      var articleDoc = await service.db.collection('articles').add(articleObj);
+
+      await service.db.collection('articles').doc(articleDoc.id)
+        .collection('content').doc('content').set({
+          html: '',
+        })
+
+      window.location.href = `./#edit/${articleDoc.id}`;
+
+    }
+
+    this.on('mount', function(){
+
+    });
+    

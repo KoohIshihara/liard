@@ -1,0 +1,21 @@
+page-edit
+  div.wrap-page.py40
+    module-editor(id='{id}')
+
+  style(scoped, type='less').
+    :scope {
+      padding-top: 48px;
+      .wrap-page {
+        display: block;
+        background: #FFF;
+      }
+    }
+
+  script.
+
+    var self = this;
+    this.id = opts.id;
+
+    this.on('mount', function(){
+
+    });

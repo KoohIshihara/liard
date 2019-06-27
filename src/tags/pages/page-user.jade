@@ -1,0 +1,27 @@
+page-user
+  div.wrap-page
+    module-user-profile(uid='{uid}')
+    module-user-articles(uid='{uid}')
+
+  style(scoped, type='less').
+    :scope {
+      padding-top: 48px;
+      .wrap-page {
+        display: block;
+        width: 100%;
+        width: 90%;
+        max-width: 840px;
+        margin: 0 auto;
+      }
+    }
+
+  script.
+
+    var self = this;
+    this.uid = opts.uid;
+
+    this.on('mount', function(){
+
+    });
+
+    

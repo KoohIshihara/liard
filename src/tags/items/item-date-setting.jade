@@ -1,0 +1,110 @@
+item-date-setting(data-date='{date}').f.mr12
+  div.wrap-item.f
+    div.published-on.f.fm.mr8
+      span.pb2 Published on 
+
+    div.wrap-year
+      div.wrap-icon.f.fc
+        img(onclick='{onIcon}' data-action='up_year' src='img/icon/up.svg').icon
+      span.year.py4 {year}
+      div.wrap-icon.icon.f.fc
+        img(onclick='{onIcon}' data-action='down_year' src='img/icon/down.svg').icon
+
+    span.f.fh.px6 -
+
+    div.wrap-month
+      div.wrap-icon.f.fc
+        img(onclick='{onIcon}' data-action='up_month' src='img/icon/up.svg').icon
+      span.month.pl2.py4 {month}
+      div.wrap-icon.f.fc
+        img(onclick='{onIcon}' data-action='down_month' src='img/icon/down.svg').icon
+
+    span.f.fh.px6 -
+
+    div.wrap-day
+      div.wrap-icon.f.fc
+        img(onclick='{onIcon}' data-action='up_day' src='img/icon/up.svg').icon
+      span.day.pl2.py4 {day}
+      div.wrap-icon.f.fc
+        img(onclick='{onIcon}' data-action='down_day' src='img/icon/down.svg').icon
+  
+  style(scoped, type='less').
+    :scope {
+      .published-on {
+        span {
+          font-weight: lighter;
+          color: #999;
+        }
+      }
+      span {
+        font-size: 18px;
+        font-weight: normal;
+      }
+      .wrap-icon {
+        height: 28px;
+        .icon {
+          width: 22px;
+          cursor: pointer;
+        }
+      }
+    }
+
+  script.
+
+    var self = this;
+
+    this.date = moment(opts.date);
+    riot.addedDate = '2045-04-01';
+
+    this.year = this.date.format('YYYY');
+    this.month = this.date.format('MM');
+    this.day = this.date.format('DD');
+
+    this.on('mount', function(){
+
+      
+    });
+
+    this.onIcon = function(e){
+
+      var action = e.target.dataset.action;
+
+      switch(action){
+        case 'up_year':
+          self.date = self.date.add(1, 'years');
+          self.year = self.date.format('YYYY');
+        break;
+
+        case 'down_year':
+          self.date = self.date.subtract(1, 'years');
+          self.year = self.date.format('YYYY');
+        break;
+
+        case 'up_month':
+          self.date = self.date.add(1, 'months');
+          self.month = self.date.format('MM');
+        break;
+
+        case 'down_month':
+          self.date = self.date.subtract(1, 'months');
+          self.month = self.date.format('MM');
+        break;
+
+        case 'up_day':
+          self.date = self.date.add(1, 'days');
+          self.day = self.date.format('DD');
+        break;
+
+        case 'down_day':
+          self.date = self.date.subtract(1, 'days');
+          self.day = self.date.format('DD');
+        break;
+      }
+
+      self.update();
+
+      riot.addedDate = self.date.format('YYYY-MM-DD')
+
+    }
+
+

@@ -1,0 +1,74 @@
+item-list-article(if='{showThisList}')
+  a(href='{url}').wrap-item
+    div.wrap-card-content.line-clamp-1.my14.pl12.py8
+      div.f.flex-between
+        span.date.mb6 {date}
+        span(onclick='{delete}').delete Delete
+      div.f.fm.mb8
+        span(if='{content.title}').title.line-clamp-1.mr12 {content.title}
+        span(if='{content.publish}').status Published
+        span(if='{!content.publish}').status Drafted
+      span.sub-title.line-clamp-1 {content.subTitle}
+  
+  style(scoped, type='less').
+    :scope {
+      display: block;
+      cursor: pointer;
+      .wrap-card-content {
+        border-left: solid 2px rgba(0,0,0,0.2);
+        span {
+          display: block;
+        }
+        .date {
+          font-size: 14px;
+          font-weight: lighter;
+          color: #999;
+        }
+        .delete {
+          font-size: 14px;
+          font-weight: lighter;
+          color: #ff5252;
+        }
+        .title {
+          font-size: 20px;
+          font-weight: bold;
+        }
+        .status {
+          font-size: 12px;
+          color: #999;
+        }
+        .sub-title {
+          font-size: 14px;
+        }
+      }
+
+      @media only screen and (max-width : 600px) {
+        width: 100%;
+      }
+    }
+
+  script.
+
+    var self = this;
+
+    this.content = opts.content;
+    this.date = moment(this.content.publishDate).format('MMMM Do YYYY');
+    this.url = `./#edit/${this.content.id}`;
+
+    this.showThisList = true;
+
+    this.delete = async function(){
+
+      var doDelete = window.confirm('Really?');
+
+      if(doDelete){
+        await service.db.collection('articles').doc(self.content.id).collection('content').doc('content').delete();
+        await service.db.collection('articles').doc(self.content.id).delete();
+        self.showThisList = false;
+        self.update();
+      }
+
+    }
+
+
+

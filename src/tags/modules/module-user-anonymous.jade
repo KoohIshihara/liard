@@ -1,0 +1,63 @@
+module-user-anonymous
+  div.wrap-module.f.fm.py30
+    div.wrap-img.f.fh
+      img(src='/img/fakeman.png')
+    div.wrap-profile.f.fm
+      div.pl30
+        span.name.mb6 虚構ライター
+        span.profile-text No Profile
+
+
+  style(scoped, type='less').
+    :scope {
+      .wrap-module {
+        border-bottom: solid .6px rgba(0,0,0,0.2);
+        .wrap-img {
+          width: 120px;
+          height: 120px;
+          overflow: hidden;
+          border-radius: 50%;
+          border: solid .6px rgba(0,0,0,0.2);
+          img {
+            object-fit: cover;
+          }
+        }
+        .wrap-profile {
+          width: calc(~'100% - 120px');  
+          .name {
+            display: block;
+            font-size: 22px;
+            letter-spacing: 0.6px;
+          }
+          .profile-text {
+            font-size: 14px;
+            letter-spacing: 0.6px;
+            color: #999;
+          }
+        }
+      }
+    }
+
+  script.
+
+    var self = this;
+
+    this.on('mount', function(){
+
+    });
+
+    this.getUser = async function(uid){
+
+      var userDoc = await service.db.collection('users').doc(uid).get();
+      self.user = userDoc.data();
+      self.user.photoUrl = `${self.user.photoUrl}?width=200&amp;height=200`
+      self.update();
+
+    };
+
+    if(opts.uid) this.getUser(opts.uid);
+
+
+    this.toUserPage = function(){
+      window.location.href = `/#user/${opts.uid}`;
+    }

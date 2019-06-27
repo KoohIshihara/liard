@@ -1,0 +1,117 @@
+page-article
+  div.wrap-page.py40
+    //module-articleにまとめた方が良さそう
+    span.publish-date.mb8 {publishDate}
+    h1.mb10 {title}
+    div#wrapArticleContent.mb20
+    div.wrap-writer.mb20
+      //module-user-anonymous
+      user-profile
+      //module-user-profile(if='{uid}' uid='{uid}')
+    div.wrap-others
+      module-articles(normalArticleNum='{20}' curatedArticleNum='{10}')
+
+
+
+  style(scoped, type='less').
+    :scope {
+      padding-top: 48px;
+      .wrap-page {
+        display: block;
+        width: 100%;
+        width: 90%;
+        max-width: 700px;
+        margin: 0 auto;
+        .publish-date {
+          display: block;
+          font-size: 14px;
+          color: #999;
+        }
+        h1 {
+          font-size: 22px;
+          font-weight: bold;
+          letter-spacing: 0.6px;
+        }
+
+        #wrapArticleContent {
+          h2 {
+            margin-bottom: 16px;
+          }
+          p {
+            font-size: 14px;
+            margin-bottom: 24px;
+            line-height: 1.8;
+          }
+          a {
+            color: #999;
+            border-bottom: solid 0.8px;
+            word-break: break-all;
+          }
+          figure {
+            margin-bottom: 24px;
+          }
+          blockquote {
+            font-style: italic;
+            border-left: solid #2a2a2a;
+            padding-left: 12px;
+            margin-top: 24px;
+            margin-bottom: 24px;
+          }
+          .medium-insert-buttons {
+            display: none;
+          }
+          .medium-insert-images-progress {
+            display: none;
+          }
+        }
+      }
+    }
+
+  script.
+
+    var self = this;
+    this.id = opts.id;
+
+    this.uid;
+
+    this.on('mount', function(){
+
+      self.loadArticle();
+
+      $('modal-content').addClass('show');
+      $('modal-content').scrollTop(0);
+
+      // 次の画面遷移時にフェードインを防止
+      riot.enableFadeIn = false;
+
+      $(document).on("custom:close", function() {
+        $('modal-content').removeClass('show');
+        self.unmount(true);
+      });
+
+    });
+
+    this.loadArticle = async function(){
+      $('#loadingForModal').fadeIn(400);
+
+      var articleDoc = await service.db.collection('articles').doc(self.id).get();
+      var article = articleDoc.data();
+
+      riot.mount('user-profile', 'module-user-profile', {uid: article.author});
+
+      self.title = article.title;
+
+      var articleContentDoc = await service.db.collection('articles').doc(self.id)
+        .collection('content')
+        .doc('content')
+        .get();
+      
+      $('#wrapArticleContent').html(articleContentDoc.data().html);
+
+      self.publishDate = 'Published on ' + moment(article.publishDate).format('MMMM Do YYYY');;
+
+      self.update();
+
+      $('#loadingForModal').fadeOut(400);
+    }
+
